@@ -1,0 +1,9 @@
+Please analyze this facial image and provide a comprehensive skin quality assessment. Focus on:
+
+1. Overall skin cleanliness (pore clarity, presence of makeup or dirt, surface cleanliness)
+2. Skin quality (texture, tone, hydration, any visible concerns)
+3. Age estimation based on skin condition and facial features
+4. Specific concerns if present (acne, wrinkles, dark spots, redness, dryness, oiliness, etc.)
+5. Brief recommendations for improvement
+
+Remember to respond ONLY with valid JSON in the specified format. Do not include any explanatory text before or after the JSON.

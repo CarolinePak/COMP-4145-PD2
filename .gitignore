@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# Environment Variables
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Data (exclude user data but keep structure)
+data/users/*.json
+data/analyses/**/*.json
+!data/users/.gitkeep
+!data/analyses/.gitkeep
+
+# Logs
+*.log
+
+# Jupyter Notebooks (if used)
+.ipynb_checkpoints/
+
+# Test Coverage
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Temporary files
+*.tmp
+temp/
+
+# Test files
+test_face.jpg
+test_api.py
