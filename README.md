@@ -39,20 +39,22 @@
    - Follow-up questions and recommendations
 
 ### Additional Features (3 Required Enhancements)
-3. **User Authentication & Profile Management**
-   - LLM-simulated user authentication
-   - Profile creation and management through prompts
-   - Session-based user tracking (Streamlit session state)
+3. **Interactive Chatbot**
+   - Conversational interface for skincare advice
+   - Context-aware responses based on latest skin analysis
+   - Chat history management
+   - Quick question suggestions
 
 4. **History Analytics Dashboard**
    - Visual timeline of past skin analyses
    - Progress tracking with charts (skin score trends)
    - Comparison view between analyses
+   - Export to CSV functionality
 
 5. **Personalized Product Recommendations**
    - AI-generated product suggestions based on skin analysis
    - Categorized recommendations (cleanser, moisturizer, treatment, etc.)
-   - Ingredient explanations
+   - Ingredient explanations and usage instructions
 
 ## Tech Stack
 

@@ -35,10 +35,10 @@ SkinInsight has been successfully developed and deployed as a fully functional w
 | Feature | Status | Completion | Notes |
 |---------|--------|-----------|-------|
 | **Skin Analysis** (Core) | ✅ Complete | 100% | Image upload, LLM analysis, KPI display, data persistence |
-| **Interactive Chatbot** | ✅ Complete | 100% | Context-aware conversations, chat history, quick questions |
-| **User Authentication** (Feature #1) | ✅ Complete | 100% | Registration, login, profile management, session handling |
+| **Interactive Chatbot** (Feature #1) | ✅ Complete | 100% | Context-aware conversations, chat history, quick questions |
 | **History Analytics** (Feature #2) | ✅ Complete | 100% | Timeline view, trend charts, statistics, CSV export |
 | **Product Recommendations** (Feature #3) | ✅ Complete | 100% | AI-generated suggestions, categorized products, ingredients |
+| **User Profile Management** (Supporting) | ✅ Complete | 100% | Profile creation, settings, session handling |
 
 ### Component Completion
 

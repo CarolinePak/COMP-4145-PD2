@@ -69,12 +69,13 @@ Develop an enhanced skincare analysis application that goes beyond basic image a
 
 ### Three Additional Features (Project Requirements)
 
-**2. User Authentication & Profile Management** *(Additional Feature #1)*
-- User registration and login (LLM-simulated for demo purposes)
-- User profile creation with skin type and concerns
-- Session management
-- Profile editing capabilities
-- **Implementation Approach:** Use LLM to generate user validation logic and store data in JSON files. This is a prototype-level implementation suitable for demonstration, not production use.
+**2. Interactive Chatbot** *(Additional Feature #1)*
+- Conversational interface for skincare advice and follow-up questions
+- Context-aware responses based on user's latest skin analysis
+- Chat history management
+- Quick question suggestions
+- Natural language understanding for complex skincare queries
+- **Implementation Approach:** Use LLM with conversation context and analysis data to provide personalized skincare guidance through an interactive chat interface.
 
 **3. History Analytics Dashboard** *(Additional Feature #2)*
 - Visual timeline of all past skin analyses
@@ -92,9 +93,9 @@ Develop an enhanced skincare analysis application that goes beyond basic image a
 - **Implementation Approach:** Use LLM with specialized prompts to generate contextual recommendations based on analysis results.
 
 ### Supporting Features
-- **Interactive Chatbot:** Conversational interface for follow-up questions and skincare advice
+- **User Profile Management:** Simple profile system for tracking user information (skin type, age, concerns)
 - **Responsive UI:** Clean, intuitive interface accessible on desktop and mobile
-- **Data Persistence:** Save analyses for future reference
+- **Data Persistence:** Save analyses and chat history for future reference
 
 ## Technical Approach
 
