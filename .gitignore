@@ -67,3 +67,4 @@ temp/
 # Test files
 test_face.jpg
 test_api.py
+.venv/
