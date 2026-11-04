@@ -44,6 +44,7 @@ with st.sidebar:
             "💄 Recommendations"
         ],
         index=0,
+        key="navigation_page",
         label_visibility="visible"
     )
 

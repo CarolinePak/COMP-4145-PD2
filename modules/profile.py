@@ -157,9 +157,25 @@ def _render_dashboard(user):
     st.divider()
     st.markdown("### Quick actions")
     action1, action2, action3 = st.columns(3)
-    action1.info("🔬 Start a new analysis from the sidebar")
-    action2.info("📊 Review progress in History")
-    action3.info("💄 Generate personalized recommendations")
+    action1.button(
+        "🔬 New skin analysis",
+        type="primary",
+        use_container_width=True,
+        on_click=_navigate_to,
+        args=("🏠 Skin Analysis",),
+    )
+    action2.button(
+        "📊 View history",
+        use_container_width=True,
+        on_click=_navigate_to,
+        args=("📊 History",),
+    )
+    action3.button(
+        "💄 Get recommendations",
+        use_container_width=True,
+        on_click=_navigate_to,
+        args=("💄 Recommendations",),
+    )
 
     with st.expander("Local profile management"):
         st.caption(
@@ -283,6 +299,11 @@ def _clear_active_profile():
     st.session_state.chat_history = []
     st.session_state.recommendations = None
     st.session_state.editing_profile = False
+
+
+def _navigate_to(page):
+    """Update the sidebar navigation from a profile quick action."""
+    st.session_state.navigation_page = page
 
 
 def _validate_new_profile(username, goals):
