@@ -1,0 +1,694 @@
+{
+  "schema_version": "1.0",
+  "language": "en",
+  "notes": "Educational catalogue. Regional formulas may differ. No sunscreen is currently included; a routine may mention generic sunscreen without inventing a named product.",
+  "products": [
+    {
+      "product_id": "P01",
+      "brand": "CeraVe",
+      "product_name": "Hydrating Facial Cleanser",
+      "category": "Cleanser",
+      "description": "Gentle cleansing cleanser.",
+      "skin_types": [
+        "Normal",
+        "Dry"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Gentle cleansing"
+      ],
+      "key_ingredients": [
+        "Ceramides",
+        "Hyaluronic acid"
+      ],
+      "benefits": [
+        "Gentle cleansing",
+        "Moisture balance",
+        "Barrier support"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://www.cerave.com/en-us/skincare/cleansers/hydrating-facial-cleanser",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P02",
+      "brand": "CeraVe",
+      "product_name": "Foaming Facial Cleanser",
+      "category": "Cleanser",
+      "description": "Removes excess oil cleanser.",
+      "skin_types": [
+        "Normal",
+        "Oily"
+      ],
+      "target_concerns": [
+        "Visible shine",
+        "Excess oil"
+      ],
+      "key_ingredients": [
+        "Ceramides",
+        "Hyaluronic acid",
+        "Niacinamide"
+      ],
+      "benefits": [
+        "Removes excess oil",
+        "Cleansing",
+        "Moisture balance"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://www.cerave.com/skincare/cleansers/foaming-facial-cleanser",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P03",
+      "brand": "CeraVe",
+      "product_name": "Hydrating Cream-to-Foam Cleanser",
+      "category": "Cleanser",
+      "description": "Removes makeup cleanser.",
+      "skin_types": [
+        "Normal",
+        "Dry",
+        "Sensitive"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Makeup removal"
+      ],
+      "key_ingredients": [
+        "Ceramides",
+        "Hyaluronic acid",
+        "Amino acids"
+      ],
+      "benefits": [
+        "Removes makeup",
+        "Moisture retention",
+        "Fragrance-free"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://www.cerave.com/skincare/cleansers/hydrating-cream-to-foam-cleanser",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P04",
+      "brand": "La Roche-Posay",
+      "product_name": "Toleriane Hydrating Gentle Facial Cleanser",
+      "category": "Cleanser",
+      "description": "Gentle cleansing cleanser.",
+      "skin_types": [
+        "Normal",
+        "Dry",
+        "Sensitive"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Gentle cleansing"
+      ],
+      "key_ingredients": [
+        "Ceramide NP",
+        "Niacinamide",
+        "Glycerin"
+      ],
+      "benefits": [
+        "Gentle cleansing",
+        "Moisture barrier support",
+        "Maintains skin pH"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://www.laroche-posay.us/our-products/face/face-wash/toleriane-hydrating-gentle-facial-cleanser-3337875545778.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P05",
+      "brand": "The Ordinary",
+      "product_name": "Squalane Cleanser",
+      "category": "Cleanser",
+      "description": "Removes makeup cleanser.",
+      "skin_types": [
+        "Dry"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Makeup removal"
+      ],
+      "key_ingredients": [
+        "Squalane",
+        "Sucrose Stearate",
+        "Sucrose Laurate"
+      ],
+      "benefits": [
+        "Removes makeup",
+        "Hydrating cleanse",
+        "Soap-free"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://theordinary.com/en-us/squalane-face-cleanser-100446.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P06",
+      "brand": "The Ordinary",
+      "product_name": "Glucoside Foaming Cleanser",
+      "category": "Cleanser",
+      "description": "Gentle foaming cleanse cleanser.",
+      "skin_types": [
+        "Oily"
+      ],
+      "target_concerns": [
+        "Cleansing",
+        "Uneven texture"
+      ],
+      "key_ingredients": [
+        "Decyl Glucoside",
+        "Coco-Glucoside"
+      ],
+      "benefits": [
+        "Gentle foaming cleanse",
+        "Moisture barrier support"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://theordinary.com/en-us/glucoside-foaming-face-cleanser-100616.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P07",
+      "brand": "The Ordinary",
+      "product_name": "Niacinamide 10% + Zinc 1%",
+      "category": "Serum",
+      "description": "Reduces visible shine serum.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Visible shine",
+        "Visible pores",
+        "Uneven texture",
+        "Dullness"
+      ],
+      "key_ingredients": [
+        "Niacinamide",
+        "Zinc PCA"
+      ],
+      "benefits": [
+        "Reduces visible shine",
+        "Improves pore appearance",
+        "Improves texture",
+        "Brightening"
+      ],
+      "usage": "Apply a few drops to the face morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch testing before use is advised.",
+        "Use only on unbroken skin. Stop use if irritation occurs."
+      ],
+      "source_url": "https://theordinary.com/en-us/niacinamide-10-zinc-1-serum-100436.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P08",
+      "brand": "The Ordinary",
+      "product_name": "Hyaluronic Acid 2% + B5 (with Ceramides)",
+      "category": "Serum",
+      "description": "Hydration serum.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Dehydration",
+        "Dryness"
+      ],
+      "key_ingredients": [
+        "Hyaluronic acid",
+        "Ceramides",
+        "Pro-vitamin B5"
+      ],
+      "benefits": [
+        "Hydration",
+        "Barrier support",
+        "Smoother appearance"
+      ],
+      "usage": "Apply a few drops to the face morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch testing before use is advised.",
+        "Use only on unbroken skin. Stop use if irritation occurs."
+      ],
+      "source_url": "https://theordinary.com/en-us/hyaluronic-acid-2-b5-serum-with-ceramides-100637.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P09",
+      "brand": "The Ordinary",
+      "product_name": "Soothing & Barrier Support Serum",
+      "category": "Serum",
+      "description": "Hydration serum.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Visible redness",
+        "Barrier support"
+      ],
+      "key_ingredients": [
+        "Niacinamide",
+        "Ceramides",
+        "Centella-derived ingredients",
+        "Vitamin B12"
+      ],
+      "benefits": [
+        "Hydration",
+        "Soothing comfort",
+        "Reduces irritation-related redness appearance"
+      ],
+      "usage": "Apply a few drops to the face morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch testing before use is advised.",
+        "Use only on unbroken skin. Stop use if irritation occurs."
+      ],
+      "source_url": "https://theordinary.com/en-us/soothing-barrier-support-serum-100634.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P10",
+      "brand": "The Ordinary",
+      "product_name": "Alpha Arbutin 2% + HA",
+      "category": "Serum",
+      "description": "Improves dark spot appearance serum.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Uneven skin tone",
+        "Dark spots"
+      ],
+      "key_ingredients": [
+        "Alpha-Arbutin",
+        "Hydrolyzed Sodium Hyaluronate"
+      ],
+      "benefits": [
+        "Improves dark spot appearance",
+        "Evens tone appearance",
+        "Brightening"
+      ],
+      "usage": "Apply a few drops to the face morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch testing before use is advised.",
+        "Use only on unbroken skin. Stop use if irritation occurs.",
+        "Use sun protection during the day."
+      ],
+      "source_url": "https://theordinary.com/en-us/alpha-arbutin-2-ha-serum-100401.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P11",
+      "brand": "The Ordinary",
+      "product_name": "Amino Acids + B5",
+      "category": "Serum",
+      "description": "Lightweight hydration serum.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Dehydration",
+        "Dryness"
+      ],
+      "key_ingredients": [
+        "Amino acids",
+        "Panthenol",
+        "Betaine",
+        "Sodium PCA"
+      ],
+      "benefits": [
+        "Lightweight hydration",
+        "Hydration barrier support",
+        "Softer skin"
+      ],
+      "usage": "Apply a few drops to the face morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch testing before use is advised.",
+        "Use only on unbroken skin. Stop use if irritation occurs.",
+        "A tingling sensation may occur; follow the official directions if uncomfortable."
+      ],
+      "source_url": "https://theordinary.com/en-us/amino-acids-b5-serum-100402.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P12",
+      "brand": "The Ordinary",
+      "product_name": "100% Plant-Derived Squalane",
+      "category": "Anhydrous serum",
+      "description": "Surface hydration anhydrous serum.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Dryness"
+      ],
+      "key_ingredients": [
+        "Squalane"
+      ],
+      "benefits": [
+        "Surface hydration",
+        "Moisture barrier support",
+        "Non-comedogenic"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://theordinary.com/en-us/100-plant-derived-squalane-face-oil-100398.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P13",
+      "brand": "The Ordinary",
+      "product_name": "Caffeine Solution 5% + EGCG Eye Serum",
+      "category": "Eye serum",
+      "description": "Improves puffiness appearance eye serum.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Dark circles",
+        "Eye puffiness"
+      ],
+      "key_ingredients": [
+        "Caffeine",
+        "Epigallocatechin Gallatyl Glucoside"
+      ],
+      "benefits": [
+        "Improves puffiness appearance",
+        "Improves dark circle appearance",
+        "Lightweight texture"
+      ],
+      "usage": "Apply a small amount to the eye contour morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch test before use. Use on unbroken skin. Stop use if irritation occurs."
+      ],
+      "source_url": "https://theordinary.com/en-us/caffeine-solution-5-egcg-eye-serum-100412.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P14",
+      "brand": "The Ordinary",
+      "product_name": "Natural Moisturizing Factors + Beta Glucan",
+      "category": "Moisturizer",
+      "description": "Surface hydration moisturizer.",
+      "skin_types": [
+        "Oily"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Lightweight hydration"
+      ],
+      "key_ingredients": [
+        "Beta-Glucan",
+        "Amino acids",
+        "Ceramides"
+      ],
+      "benefits": [
+        "Surface hydration",
+        "Barrier support",
+        "Oil-free gel"
+      ],
+      "usage": "Apply a small amount to the face morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch testing before use is advised.",
+        "Use only on unbroken skin. Stop use if irritation occurs."
+      ],
+      "source_url": "https://theordinary.com/en-us/natural-moisturizing-factors-beta-glucan-moisturizer-100612.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P15",
+      "brand": "The Ordinary",
+      "product_name": "Natural Moisturizing Factors + HA",
+      "category": "Moisturizer",
+      "description": "Surface hydration moisturizer.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Dryness"
+      ],
+      "key_ingredients": [
+        "Sodium Hyaluronate",
+        "Amino acids",
+        "Sodium PCA",
+        "Urea"
+      ],
+      "benefits": [
+        "Surface hydration",
+        "Moisture retention",
+        "Non-greasy feel"
+      ],
+      "usage": "Apply a small amount to the face morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch testing before use is advised.",
+        "Use only on unbroken skin. Stop use if irritation occurs."
+      ],
+      "source_url": "https://theordinary.com/en-us/natural-moisturizing-factors-ha-moisturizer-100435.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P16",
+      "brand": "The Ordinary",
+      "product_name": "Natural Moisturizing Factors + PhytoCeramides",
+      "category": "Moisturizer",
+      "description": "Rich hydration moisturizer.",
+      "skin_types": [
+        "Dry"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Barrier support"
+      ],
+      "key_ingredients": [
+        "Plant-derived phytoceramides",
+        "Fatty acids",
+        "Amino acids",
+        "Urea"
+      ],
+      "benefits": [
+        "Rich hydration",
+        "Barrier support",
+        "Plumper appearance"
+      ],
+      "usage": "Apply a small amount to the face morning and evening.",
+      "usage_status": "Official directions summarized",
+      "cautions": [
+        "Check the current regional ingredient list and label before use.",
+        "Patch testing before use is advised.",
+        "Use only on unbroken skin. Stop use if irritation occurs."
+      ],
+      "source_url": "https://theordinary.com/en-us/natural-moisturizing-factors-phytoceramides-moisturizer-100610.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P17",
+      "brand": "CeraVe",
+      "product_name": "PM Facial Moisturizing Lotion",
+      "category": "Moisturizer",
+      "description": "Nighttime hydration moisturizer.",
+      "skin_types": [
+        "All"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Barrier support"
+      ],
+      "key_ingredients": [
+        "Ceramides",
+        "Hyaluronic acid",
+        "Niacinamide"
+      ],
+      "benefits": [
+        "Nighttime hydration",
+        "Barrier support",
+        "Oil-free",
+        "Non-comedogenic"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://www.cerave.com/skincare/moisturizers/pm-facial-moisturizing-lotion",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P18",
+      "brand": "CeraVe",
+      "product_name": "Moisturizing Cream",
+      "category": "Moisturizer",
+      "description": "Locks in moisture moisturizer.",
+      "skin_types": [
+        "Normal",
+        "Dry"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Barrier support"
+      ],
+      "key_ingredients": [
+        "Ceramides",
+        "Hyaluronic acid",
+        "Dimethicone",
+        "Petrolatum"
+      ],
+      "benefits": [
+        "Locks in moisture",
+        "Barrier support",
+        "Rich texture"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://www.cerave.com/skincare/moisturizers/moisturizing-cream",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P19",
+      "brand": "CeraVe",
+      "product_name": "Daily Moisturizing Lotion",
+      "category": "Moisturizer",
+      "description": "Hydration moisturizer.",
+      "skin_types": [
+        "Normal",
+        "Dry"
+      ],
+      "target_concerns": [
+        "Dryness"
+      ],
+      "key_ingredients": [
+        "Ceramides",
+        "Hyaluronic acid"
+      ],
+      "benefits": [
+        "Hydration",
+        "Barrier support",
+        "Lightweight",
+        "Oil-free"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://www.cerave.com/skincare/moisturizers/daily-moisturizing-lotion",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    },
+    {
+      "product_id": "P20",
+      "brand": "La Roche-Posay",
+      "product_name": "Toleriane Double Repair Face Moisturizer",
+      "category": "Moisturizer",
+      "description": "Hydration moisturizer.",
+      "skin_types": [
+        "All",
+        "Sensitive"
+      ],
+      "target_concerns": [
+        "Dryness",
+        "Barrier support"
+      ],
+      "key_ingredients": [
+        "Ceramide NP",
+        "Niacinamide",
+        "Glycerin"
+      ],
+      "benefits": [
+        "Hydration",
+        "Barrier support",
+        "Lightweight",
+        "Fragrance-free"
+      ],
+      "usage": "Follow the current product label for amount, frequency and application order.",
+      "usage_status": "Consult label; detailed directions not transcribed",
+      "cautions": [
+        "Check the current regional ingredient list and label before use."
+      ],
+      "source_url": "https://www.laroche-posay.us/our-products/face/face-moisturizer/toleriane-double-repair-face-moisturizer-3337875839969.html",
+      "source_region": "US",
+      "source_checked_date": "2026-11-04",
+      "notes": "Brand claims summarized; target_concerns are catalogue matching tags, not diagnoses."
+    }
+  ]
+}
