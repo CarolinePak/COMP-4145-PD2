@@ -7,6 +7,12 @@ from modules.api_client import llm_client
 from prompts.prompt_utils import load_prompt
 import uuid
 import os
+from io import BytesIO
+
+from PIL import Image, ImageOps, UnidentifiedImageError
+
+
+MAX_IMAGE_PIXELS = 25_000_000
 
 def render():
     """
@@ -23,12 +29,29 @@ def render():
     with col1:
         st.subheader("📸 Upload Image")
 
-        # File uploader
-        uploaded_file = st.file_uploader(
-            "Choose a face image",
-            type=["jpg", "jpeg", "png"],
-            help="Upload a clear, well-lit photo of your face",
-            label_visibility="collapsed"
+        image_source = st.radio(
+            "Image source",
+            ["Upload Image", "Take a Photo"],
+            horizontal=True,
+            help="Choose an existing photo or use your device camera.",
+        )
+
+        if image_source == "Upload Image":
+            uploaded_file = st.file_uploader(
+                "Choose a face image",
+                type=["jpg", "jpeg", "png"],
+                help="Upload a clear, well-lit photo of your face",
+                label_visibility="collapsed"
+            )
+        else:
+            uploaded_file = st.camera_input(
+                "Take a face photo",
+                help="Your browser may ask for camera permission.",
+            )
+
+        st.caption(
+            "Privacy: the selected photo is sent to the configured AI service "
+            "for analysis. This application does not save the original photo locally."
         )
 
         if uploaded_file is not None:
@@ -49,7 +72,10 @@ def render():
                     analyze_skin(uploaded_file)
         else:
             # Show placeholder
-            st.info("👆 Please upload an image to begin analysis")
+            if image_source == "Upload Image":
+                st.info("👆 Please upload an image to begin analysis")
+            else:
+                st.info("📷 Allow camera access and take a photo to begin analysis")
 
             # Sample instructions
             with st.expander("📋 Photo Guidelines"):
@@ -91,12 +117,39 @@ def validate_image(uploaded_file) -> tuple:
         max_mb = config.MAX_IMAGE_SIZE / (1024 * 1024)
         return False, f"File too large ({size_mb:.1f}MB). Maximum size: {max_mb:.1f}MB"
 
-    # Check file type
-    file_ext = uploaded_file.name.split('.')[-1].lower()
-    if file_ext not in config.ALLOWED_IMAGE_TYPES:
-        return False, f"Invalid file type: {file_ext}. Allowed types: {', '.join(config.ALLOWED_IMAGE_TYPES)}"
+    try:
+        image_bytes = uploaded_file.getvalue()
+        with Image.open(BytesIO(image_bytes)) as image:
+            image.verify()
+        with Image.open(BytesIO(image_bytes)) as image:
+            if image.format not in {"JPEG", "PNG"}:
+                return False, "Invalid image format. Allowed formats: JPG, JPEG, PNG"
+            if image.width * image.height > MAX_IMAGE_PIXELS:
+                return False, "Image resolution is too large. Maximum: 25 megapixels"
+    except (AttributeError, OSError, UnidentifiedImageError):
+        return False, "The selected file is not a valid or readable image"
 
     return True, None
+
+
+def prepare_image_bytes(uploaded_file) -> bytes:
+    """Normalize uploaded or camera images to an upright RGB JPEG."""
+    with Image.open(BytesIO(uploaded_file.getvalue())) as image:
+        image = ImageOps.exif_transpose(image)
+
+        if image.mode in ("RGBA", "LA") or (
+            image.mode == "P" and "transparency" in image.info
+        ):
+            rgba = image.convert("RGBA")
+            background = Image.new("RGBA", rgba.size, "white")
+            background.alpha_composite(rgba)
+            image = background.convert("RGB")
+        else:
+            image = image.convert("RGB")
+
+        output = BytesIO()
+        image.save(output, format="JPEG", quality=90, optimize=True)
+        return output.getvalue()
 
 
 def analyze_skin(uploaded_file):
@@ -116,8 +169,12 @@ def analyze_skin(uploaded_file):
     # Show loading state
     with st.spinner("🔬 Analyzing your skin... This may take 10-20 seconds."):
 
-        # Read image bytes
-        image_bytes = uploaded_file.read()
+        # Normalize uploads and camera captures to JPEG for the vision API.
+        try:
+            image_bytes = prepare_image_bytes(uploaded_file)
+        except (OSError, UnidentifiedImageError):
+            st.error("❌ The selected image could not be processed. Please choose another photo.")
+            return
 
         # Load prompts
         try:
