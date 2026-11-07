@@ -4,7 +4,7 @@ import streamlit as st
 from config import config
 
 # Import modules
-from modules import chatbot, profile, recommendations, skin_analysis
+from modules import chatbot, history, profile, recommendations, skin_analysis
 
 # MUST be first Streamlit command
 st.set_page_config(
@@ -95,7 +95,6 @@ elif page == "💬 Chatbot":
 elif page == "👤 My Profile":
     profile.render()
 elif page == "📊 History":
-    st.title("📊 History")
-    st.info("🚧 Coming soon... View your skin analysis history and progress!")
+    history.render()
 elif page == "💄 Recommendations":
     recommendations.render()
