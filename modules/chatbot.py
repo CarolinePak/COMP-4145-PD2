@@ -5,6 +5,45 @@ from modules.api_client import llm_client
 from prompts.prompt_utils import load_prompt
 from datetime import datetime
 
+
+FAQ_ITEMS = [
+    (
+        "How accurate is the skin analysis?",
+        "It is an AI estimate based on visible features in one photo. Lighting, "
+        "camera quality, makeup, and facial angle can affect the result, so it "
+        "should not be treated as a clinical measurement.",
+    ),
+    (
+        "Is my photo stored?",
+        "The application sends the selected photo to the configured AI service "
+        "for analysis, but it does not save the original photo locally. Only the "
+        "text-based analysis result is stored for history.",
+    ),
+    (
+        "What do the scores mean?",
+        "Cleanliness and quality are AI-estimated scores from 0 to 10. They are "
+        "designed for general comparison within this demo and are not medical "
+        "health scores.",
+    ),
+    (
+        "How often should I repeat an analysis?",
+        "For a more useful comparison, try once a week under similar lighting, "
+        "camera distance, angle, and skincare conditions.",
+    ),
+    (
+        "Can SkinInsight diagnose a skin condition?",
+        "No. SkinInsight provides general skincare information and cannot diagnose "
+        "or treat medical conditions. Seek a qualified healthcare professional for "
+        "persistent, painful, severe, or rapidly changing symptoms.",
+    ),
+    (
+        "Should I use every recommended product?",
+        "No. Recommended products are alternatives, not a shopping checklist. "
+        "Check ingredient labels, introduce one product at a time, and patch test "
+        "when appropriate.",
+    ),
+]
+
 def render():
     """
     Render the Chatbot page.
@@ -13,6 +52,13 @@ def render():
 
     st.title("💬 SkinCare AI Assistant")
     st.markdown("Ask me anything about skincare, your analysis results, or get personalized advice!")
+
+    with st.expander("❓ Frequently Asked Questions"):
+        for index, (question, answer) in enumerate(FAQ_ITEMS):
+            st.markdown(f"**{question}**")
+            st.write(answer)
+            if index < len(FAQ_ITEMS) - 1:
+                st.divider()
 
     # Initialize chat history in session state if not exists
     if 'chat_history' not in st.session_state:
