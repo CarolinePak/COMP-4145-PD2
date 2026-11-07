@@ -6,42 +6,12 @@ from prompts.prompt_utils import load_prompt
 from datetime import datetime
 
 
-FAQ_ITEMS = [
-    (
-        "How accurate is the skin analysis?",
-        "It is an AI estimate based on visible features in one photo. Lighting, "
-        "camera quality, makeup, and facial angle can affect the result, so it "
-        "should not be treated as a clinical measurement.",
-    ),
-    (
-        "Is my photo stored?",
-        "The application sends the selected photo to the configured AI service "
-        "for analysis, but it does not save the original photo locally. Only the "
-        "text-based analysis result is stored for history.",
-    ),
-    (
-        "What do the scores mean?",
-        "Cleanliness and quality are AI-estimated scores from 0 to 10. They are "
-        "designed for general comparison within this demo and are not medical "
-        "health scores.",
-    ),
-    (
-        "How often should I repeat an analysis?",
-        "For a more useful comparison, try once a week under similar lighting, "
-        "camera distance, angle, and skincare conditions.",
-    ),
-    (
-        "Can SkinInsight diagnose a skin condition?",
-        "No. SkinInsight provides general skincare information and cannot diagnose "
-        "or treat medical conditions. Seek a qualified healthcare professional for "
-        "persistent, painful, severe, or rapidly changing symptoms.",
-    ),
-    (
-        "Should I use every recommended product?",
-        "No. Recommended products are alternatives, not a shopping checklist. "
-        "Check ingredient labels, introduce one product at a time, and patch test "
-        "when appropriate.",
-    ),
+SUGGESTED_QUESTIONS = [
+    "Explain my latest analysis results",
+    "How can I improve my skin quality score?",
+    "What skincare routine suits my concerns?",
+    "What ingredients should I look for?",
+    "How often should I repeat a skin analysis?",
 ]
 
 def render():
@@ -52,13 +22,6 @@ def render():
 
     st.title("💬 SkinCare AI Assistant")
     st.markdown("Ask me anything about skincare, your analysis results, or get personalized advice!")
-
-    with st.expander("❓ Frequently Asked Questions"):
-        for index, (question, answer) in enumerate(FAQ_ITEMS):
-            st.markdown(f"**{question}**")
-            st.write(answer)
-            if index < len(FAQ_ITEMS) - 1:
-                st.divider()
 
     # Initialize chat history in session state if not exists
     if 'chat_history' not in st.session_state:
@@ -89,6 +52,23 @@ def render():
                 if "timestamp" in message:
                     st.caption(message["timestamp"])
 
+    # Suggested prompts close to the input, like conversation starters.
+    st.caption("Not sure what to ask? Try one of these:")
+    suggestion_columns = st.columns(2)
+    for index, question in enumerate(SUGGESTED_QUESTIONS):
+        suggestion_columns[index % 2].button(
+            question,
+            key=f"suggested_question_{index}",
+            use_container_width=True,
+            on_click=_queue_suggested_question,
+            args=(question,),
+        )
+
+    suggested_input = st.session_state.pop("suggested_question", None)
+    if suggested_input:
+        handle_user_message(suggested_input)
+        st.rerun()
+
     # Chat input at bottom
     user_input = st.chat_input("Type your question here...")
 
@@ -108,25 +88,11 @@ def render():
         msg_count = len(st.session_state.chat_history)
         st.caption(f"Messages in history: {msg_count}")
 
-        st.markdown("---")
 
-        # Quick questions
-        st.markdown("### 💡 Quick Questions")
-        st.caption("Click to ask:")
 
-        quick_questions = [
-            "What products should I use for my skin type?",
-            "How can I improve my skin quality score?",
-            "Explain my latest analysis results",
-            "What causes premature skin aging?",
-            "Best skincare routine for beginners?"
-        ]
-
-        for i, question in enumerate(quick_questions):
-            if st.button(question, key=f"quick_q_{i}", use_container_width=True):
-                # Add question to chat
-                handle_user_message(question)
-                st.rerun()
+def _queue_suggested_question(question: str):
+    """Queue a conversation starter to be sent on the next rerun."""
+    st.session_state.suggested_question = question
 
 
 def handle_user_message(user_input: str):
