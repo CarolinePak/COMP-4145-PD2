@@ -28,22 +28,35 @@ def init_session_state():
 
 init_session_state()
 
+has_active_profile = bool(st.session_state.get("user_id"))
+
+if has_active_profile:
+    navigation_pages = [
+        "👤 My Profile",
+        "🏠 Skin Analysis",
+        "💬 Chatbot",
+        "📊 History",
+        "💄 Recommendations",
+    ]
+else:
+    navigation_pages = ["👤 My Profile"]
+
+# A previous selection may no longer be available after switching profiles.
+if st.session_state.get("navigation_page") not in navigation_pages:
+    st.session_state.navigation_page = navigation_pages[0]
+
 # Sidebar navigation
 with st.sidebar:
     st.title(f"{config.APP_ICON} {config.APP_TITLE}")
     st.markdown("---")
 
+    if not has_active_profile:
+        st.info("Create or select a local profile to continue.")
+
     # Navigation menu
     page = st.radio(
         "Navigate to:",
-        [
-            "🏠 Skin Analysis",
-            "💬 Chatbot",
-            "👤 My Profile",
-            "📊 History",
-            "💄 Recommendations"
-        ],
-        index=0,
+        navigation_pages,
         key="navigation_page",
         label_visibility="visible"
     )
@@ -88,12 +101,12 @@ with st.sidebar:
     st.caption(f"SkinInsight v1.0 | COMP4145 PD2")
 
 # Main content routing
-if page == "🏠 Skin Analysis":
+if page == "👤 My Profile":
+    profile.render()
+elif page == "🏠 Skin Analysis":
     skin_analysis.render()
 elif page == "💬 Chatbot":
     chatbot.render()
-elif page == "👤 My Profile":
-    profile.render()
 elif page == "📊 History":
     history.render()
 elif page == "💄 Recommendations":
