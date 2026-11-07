@@ -347,7 +347,7 @@ def save_analysis(analysis: dict):
         from config import config
 
         # Get user ID (or use 'guest' if not logged in)
-        user_id = st.session_state.get("user_id", "guest")
+        user_id = st.session_state.get("user_id") or "guest"
 
         # Create user directory
         user_dir = os.path.join(config.ANALYSES_DIR, user_id)
