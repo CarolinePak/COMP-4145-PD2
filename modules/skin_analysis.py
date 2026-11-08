@@ -44,6 +44,18 @@ def render():
                 label_visibility="collapsed"
             )
         else:
+            # Mirror the live camera and captured preview like a front-facing camera.
+            st.markdown(
+                """
+                <style>
+                div[data-testid="stCameraInput"] video,
+                div[data-testid="stCameraInput"] img {
+                    transform: scaleX(-1);
+                }
+                </style>
+                """,
+                unsafe_allow_html=True,
+            )
             uploaded_file = st.camera_input(
                 "Take a face photo",
                 help="Your browser may ask for camera permission.",
@@ -62,14 +74,21 @@ def render():
                 st.error(f"❌ {error_msg}")
             else:
                 # Display image
-                st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
+                preview_bytes = prepare_image_bytes(
+                    uploaded_file,
+                    mirror_horizontal=image_source == "Take a Photo",
+                )
+                st.image(preview_bytes, caption="Selected Image", width="stretch")
 
                 # Show file info
                 st.caption(f"📄 {uploaded_file.name} ({uploaded_file.size / 1024:.1f} KB)")
 
                 # Analyze button
                 if st.button("🔍 Analyze Skin", type="primary", use_container_width=True):
-                    analyze_skin(uploaded_file)
+                    analyze_skin(
+                        uploaded_file,
+                        mirror_horizontal=image_source == "Take a Photo",
+                    )
         else:
             # Show placeholder
             if image_source == "Upload Image":
@@ -132,10 +151,13 @@ def validate_image(uploaded_file) -> tuple:
     return True, None
 
 
-def prepare_image_bytes(uploaded_file) -> bytes:
+def prepare_image_bytes(uploaded_file, mirror_horizontal: bool = False) -> bytes:
     """Normalize uploaded or camera images to an upright RGB JPEG."""
     with Image.open(BytesIO(uploaded_file.getvalue())) as image:
         image = ImageOps.exif_transpose(image)
+
+        if mirror_horizontal:
+            image = ImageOps.mirror(image)
 
         if image.mode in ("RGBA", "LA") or (
             image.mode == "P" and "transparency" in image.info
@@ -152,7 +174,7 @@ def prepare_image_bytes(uploaded_file) -> bytes:
         return output.getvalue()
 
 
-def analyze_skin(uploaded_file):
+def analyze_skin(uploaded_file, mirror_horizontal: bool = False):
     """
     Perform skin analysis using LLM.
 
@@ -171,7 +193,10 @@ def analyze_skin(uploaded_file):
 
         # Normalize uploads and camera captures to JPEG for the vision API.
         try:
-            image_bytes = prepare_image_bytes(uploaded_file)
+            image_bytes = prepare_image_bytes(
+                uploaded_file,
+                mirror_horizontal=mirror_horizontal,
+            )
         except (OSError, UnidentifiedImageError):
             st.error("❌ The selected image could not be processed. Please choose another photo.")
             return

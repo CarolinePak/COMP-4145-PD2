@@ -41,6 +41,25 @@ class SkinImageTests(unittest.TestCase):
         self.assertFalse(valid)
         self.assertIn("not a valid", message)
 
+    def test_camera_image_can_be_mirrored(self):
+        image = Image.new("RGB", (40, 20), "red")
+        for x in range(20, 40):
+            for y in range(20):
+                image.putpixel((x, y), (0, 0, 255))
+        output = io.BytesIO()
+        image.save(output, format="PNG")
+
+        prepared = prepare_image_bytes(
+            FakeUpload(output.getvalue()),
+            mirror_horizontal=True,
+        )
+
+        with Image.open(io.BytesIO(prepared)) as mirrored:
+            left = mirrored.getpixel((5, 10))
+            right = mirrored.getpixel((35, 10))
+            self.assertGreater(left[2], left[0])
+            self.assertGreater(right[0], right[2])
+
 
 if __name__ == "__main__":
     unittest.main()
