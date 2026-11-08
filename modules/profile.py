@@ -77,9 +77,17 @@ def _render_profile_entry():
             st.info("No local profiles yet. Create the first profile above.")
         else:
             labels = {user["user_id"]: user["username"] for user in users}
+            user_ids = list(labels)
+            last_user_id = load_last_user_id()
+            default_index = (
+                user_ids.index(last_user_id)
+                if last_user_id in user_ids
+                else 0
+            )
             selected_id = st.selectbox(
                 "Select local profile",
-                list(labels),
+                user_ids,
+                index=default_index,
                 format_func=lambda user_id: labels[user_id],
             )
             if st.button(
@@ -231,7 +239,10 @@ def list_users():
     os.makedirs(config.USERS_DIR, exist_ok=True)
     users = []
     for filename in os.listdir(config.USERS_DIR):
-        if not filename.endswith(".json") or filename == "users_index.json":
+        if not filename.endswith(".json") or filename in {
+            "users_index.json",
+            "last_profile.json",
+        }:
             continue
         try:
             with open(os.path.join(config.USERS_DIR, filename), encoding="utf-8") as file:
@@ -278,6 +289,11 @@ def delete_user(user_id):
     analysis_directory = os.path.join(config.ANALYSES_DIR, user_id)
     if os.path.isdir(analysis_directory):
         shutil.rmtree(analysis_directory)
+    if load_last_user_id() == user_id:
+        try:
+            os.remove(_last_profile_path())
+        except FileNotFoundError:
+            pass
 
 
 def _activate_user(user):
@@ -289,6 +305,7 @@ def _activate_user(user):
     st.session_state.chat_history = []
     st.session_state.recommendations = None
     st.session_state.editing_profile = False
+    _write_json(_last_profile_path(), {"user_id": user["user_id"]})
 
 
 def _clear_active_profile():
@@ -319,6 +336,21 @@ def _validate_new_profile(username, goals):
 
 def _user_path(user_id):
     return os.path.join(config.USERS_DIR, f"{user_id}.json")
+
+
+def _last_profile_path():
+    return os.path.join(config.USERS_DIR, "last_profile.json")
+
+
+def load_last_user_id():
+    """Return the last activated local profile ID, if it can be read."""
+    try:
+        with open(_last_profile_path(), encoding="utf-8") as file:
+            data = json.load(file)
+        user_id = data.get("user_id")
+        return user_id if isinstance(user_id, str) else None
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return None
 
 
 def _write_json(path, data):
