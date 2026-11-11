@@ -22,6 +22,7 @@ wheels/
 
 # Virtual Environment
 venv/
+comp4145pd2/
 ENV/
 env/
 
