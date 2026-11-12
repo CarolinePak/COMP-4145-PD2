@@ -1,113 +1,79 @@
-# app.py
+"""SkinInsight application shell and page navigation."""
+
+from pathlib import Path
 
 import streamlit as st
-from config import config
 
-# Import modules
-from modules import chatbot, history, profile, recommendations, skin_analysis
-
-# MUST be first Streamlit command
 st.set_page_config(
-    page_title=f"{config.APP_ICON} {config.APP_TITLE}",
-    page_icon=config.APP_ICON,
+    page_title="SkinInsight",
+    page_icon=":material/flare:",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed",
 )
 
-# Initialize session state
-def init_session_state():
-    """Initialize session state variables."""
-    if 'initialized' not in st.session_state:
-        st.session_state.initialized = True
-        st.session_state.user_id = None
-        st.session_state.username = None
-        st.session_state.analyses = []
-        st.session_state.chat_history = []
-        st.session_state.current_analysis = None
-        st.session_state.recommendations = None
+from modules import chatbot, history, profile, recommendations, skin_analysis, ui
 
-init_session_state()
 
-has_active_profile = bool(st.session_state.get("user_id"))
+PAGES = {
+    "My Profile": (profile.render, "profile", "Manage your goals and skin journal."),
+    "Skin Analysis": (skin_analysis.render, "scan", "Review visible skin patterns from a clear photo."),
+    "Chatbot": (chatbot.render, "chat", "Ask a skincare question or make sense of your results."),
+    "History": (history.render, "history", "See how your saved skin assessments change over time."),
+    "Recommendations": (recommendations.render, "routine", "Explore skincare products and routines based on your latest assessment."),
+}
 
-if has_active_profile:
-    navigation_pages = [
-        "👤 My Profile",
-        "🏠 Skin Analysis",
-        "💬 Chatbot",
-        "📊 History",
-        "💄 Recommendations",
-    ]
-else:
-    navigation_pages = ["👤 My Profile"]
-
-# A previous selection may no longer be available after switching profiles.
-if st.session_state.get("navigation_page") not in navigation_pages:
-    st.session_state.navigation_page = navigation_pages[0]
-
-# Sidebar navigation
-with st.sidebar:
-    st.title(f"{config.APP_ICON} {config.APP_TITLE}")
-    st.markdown("---")
-
-    if not has_active_profile:
-        st.info("Create or select a local profile to continue.")
-
-    # Navigation menu
-    page = st.radio(
-        "Navigate to:",
-        navigation_pages,
-        key="navigation_page",
-        label_visibility="visible"
+if not st.session_state.get("initialized"):
+    st.session_state.update(
+        initialized=True, user_id=None, username=None, analyses=[],
+        chat_history=[], current_analysis=None, recommendations=None,
     )
 
-    st.markdown("---")
+if st.session_state.get("navigation_page") not in PAGES:
+    st.session_state.navigation_page = "My Profile"
 
-    # API Configuration
-    with st.expander("⚙️ API Settings", expanded=False):
-        st.markdown("**Configure your API key:**")
+stylesheet = Path(__file__).parent / "assets" / "styles" / "premium.css"
+ui.html(f"<style>{stylesheet.read_text(encoding='utf-8')}</style>")
 
-        api_key_input = st.text_input(
-            "API Key",
-            value=config.API_KEY if config.API_KEY else "",
-            type="password",
-            help="Enter your GPT-6-Luna API key from your instructor"
+page = st.session_state.navigation_page
+with ui.panel("navigation"):
+    brand, *links, settings = st.columns([2, 1.05, 1.16, .88, .82, 1.44, .9], gap="small")
+    with brand:
+        ui.html(
+            f'<div class="wordmark"><span>{ui.icon("brand")}</span>'
+            '<div>SkinInsight<small>SKIN HEALTH JOURNAL</small></div></div>'
         )
+    for column, name in zip(links, PAGES):
+        with column:
+            ui.page_button(name, name, key=f"nav_{name}", primary=name == page, full=True)
+    with settings:
+        with st.popover("Settings", use_container_width=True):
+            st.markdown("#### AI settings")
+            api_key = st.text_input(
+                "API key", type="password",
+                help="Use the API key supplied by your instructor.",
+            )
+            if st.button("Save API key", type="primary"):
+                if api_key.strip():
+                    st.session_state.api_key = api_key.strip()
+                    st.success("API key saved for this session.")
+                else:
+                    st.warning("Enter an API key.")
+            st.caption("AI-generated guidance is for information and does not provide a diagnosis.")
 
-        if st.button("💾 Save API Key", use_container_width=True):
-            config.API_KEY = api_key_input
-            # Update the global client with new key
-            from modules.api_client import llm_client
-            llm_client.api_key = api_key_input
-            st.success("✅ API Key saved for this session!")
-            st.info("💡 Note: Key is only saved for current session. Add to .env file for persistence.")
+render_page, glyph, description = PAGES[page]
+if page != "My Profile" and not st.session_state.get("user_id"):
+    ui.heading(page, description, glyph)
+    with ui.panel("card"):
+        ui.empty_state(
+            "Start with a profile",
+            "Create or select a local profile to keep your skin insights together.",
+            "profile",
+        )
+        ui.page_button("Go to My Profile", "My Profile", key="profile_required", primary=True)
+else:
+    render_page()
 
-    st.markdown("---")
-
-    # About section
-    with st.expander("ℹ️ About SkinInsight"):
-        st.markdown("""
-        **SkinInsight** is an AI-powered skincare analysis platform that uses advanced language models to:
-
-        - Analyze skin condition from photos
-        - Provide personalized skincare advice
-        - Track your skin health progress
-        - Recommend suitable products
-
-        **Powered by GPT-6-Luna**
-        """)
-
-    st.markdown("---")
-    st.caption(f"SkinInsight v1.0 | COMP4145 PD2")
-
-# Main content routing
-if page == "👤 My Profile":
-    profile.render()
-elif page == "🏠 Skin Analysis":
-    skin_analysis.render()
-elif page == "💬 Chatbot":
-    chatbot.render()
-elif page == "📊 History":
-    history.render()
-elif page == "💄 Recommendations":
-    recommendations.render()
+ui.html(
+    '<footer class="site-footer"><strong>SkinInsight</strong>'
+    '<span>AI-assisted skincare information for everyday use.</span></footer>'
+)

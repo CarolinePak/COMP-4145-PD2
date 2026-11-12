@@ -5,10 +5,12 @@ import os
 import shutil
 import uuid
 from datetime import datetime
+from html import escape
 
 import streamlit as st
 
 from config import config
+from modules import ui
 
 
 SKINCARE_GOALS = [
@@ -24,24 +26,59 @@ SKINCARE_GOALS = [
 
 
 def render():
-    """Render the local profile selector or the active user's dashboard."""
-    st.title("👤 My Profile")
-    st.caption("Local demo profile · Your data is stored only on this device.")
-
-    if st.session_state.get("user_id"):
-        user = load_user(st.session_state.user_id)
-        if user:
-            _render_dashboard(user)
-            return
+    """Render the profile landing page and journal."""
+    user_id = st.session_state.get("user_id")
+    user = load_user(user_id) if user_id else None
+    if user_id and not user:
         _clear_active_profile()
 
-    _render_profile_entry()
+    _render_hero(user)
+    if user:
+        _render_journal_tools()
+        _render_dashboard(user)
+    else:
+        with ui.panel("card"):
+            _render_profile_entry()
+
+
+def _render_hero(user):
+    with ui.panel("hero"):
+        copy, portrait = st.columns([.94, 1.06], gap="small")
+        with copy:
+            greeting = f"Welcome back, {escape(user['username'])}" if user else "Your personal skin journal"
+            ui.html(
+                f'<div class="hero-copy"><div class="kicker">{greeting}</div>'
+                '<h1>Get to know<br>your skin.</h1>'
+                '<p>Review visible skin patterns, ask skincare questions, and track changes over time.</p></div>'
+            )
+            if user:
+                ui.page_button("Start skin analysis", "Skin Analysis", key="hero_scan", primary=True)
+            else:
+                ui.html('<a class="editorial-button" href="#profile-setup" target="_self">Set up your profile</a>')
+        with portrait:
+            ui.html(
+                '<div class="hero-photo" role="img" '
+                'aria-label="A man and a woman with natural skin texture in soft daylight"></div>'
+            )
+
+
+def _render_journal_tools():
+    ui.html('<div class="section-heading"><h2>Your skin journal</h2></div>')
+    tools = [
+        ("Chatbot", "Ask a skincare question", "Talk through your results or ask about everyday skincare.", "chat", "sage"),
+        ("History", "Follow your progress", "Revisit your saved assessments and see what changes over time.", "history", "stone"),
+        ("Recommendations", "Build your routine", "Explore products and a routine based on your latest assessment.", "routine", "clay"),
+    ]
+    with ui.panel("tools"):
+        for column, (page, title, description, glyph, tone) in zip(st.columns(3), tools):
+            with column, ui.panel(f"feature {tone}"):
+                ui.card_heading(title, description, glyph, tone)
+                ui.page_button(f"Open {page.lower()}", page, key=f"journal_{page}")
 
 
 def _render_profile_entry():
-    st.subheader("Welcome to SkinInsight")
-    st.write("Create a small local profile or continue with an existing one.")
-
+    ui.html('<div id="profile-setup" class="section-heading"><h2>Your profile</h2>'
+            '<p>Create a local profile or continue with one already on this device.</p></div>')
     create_tab, existing_tab = st.tabs(["Create profile", "Existing profile"])
 
     with create_tab:
@@ -49,7 +86,7 @@ def _render_profile_entry():
             username = st.text_input(
                 "Username",
                 max_chars=30,
-                placeholder="How should we call you?",
+                placeholder="What should we call you?",
             )
             goals = st.multiselect(
                 "Skincare goals",
@@ -102,90 +139,55 @@ def _render_profile_entry():
 def _render_dashboard(user):
     analyses = load_user_analyses(user["user_id"])
     latest = analyses[-1] if analyses else None
+    latest_score = latest.get("skin_quality_score") if latest else None
+    first_score = analyses[0].get("skin_quality_score") if len(analyses) >= 2 else None
+    improvement = (
+        latest_score - first_score
+        if isinstance(latest_score, (float, int)) and isinstance(first_score, (float, int))
+        else None
+    )
 
-    heading, switch = st.columns([4, 1])
-    with heading:
-        st.subheader(f"Welcome back, {user['username']} 👋")
-        st.write("Your skincare journey at a glance.")
-    with switch:
-        if st.button("Switch profile", use_container_width=True):
+    with ui.panel("dashboard"):
+        goals_col, assessment_col = st.columns([.85, 1.55])
+        with goals_col, ui.panel("card"):
+            st.header("Skincare goals")
+            if st.session_state.get("editing_profile"):
+                _render_goal_editor(user)
+            else:
+                goals = user.get("skincare_goals", [])
+                if goals:
+                    tags = "".join(f'<li>{escape(goal)}</li>' for goal in goals)
+                    ui.html(f'<ul class="goal-tags">{tags}</ul>')
+                else:
+                    st.caption("No goals selected yet.")
+                if st.button("Edit goals"):
+                    st.session_state.editing_profile = True
+                    st.rerun()
+
+        with assessment_col, ui.panel("card"):
+            st.header("Assessment overview")
+            with ui.panel("metrics"):
+                count_col, score_col, change_col = st.columns(3)
+                count_col.metric("Saved analyses", len(analyses))
+                score_col.metric("Latest quality score", f"{latest_score}/10" if latest_score is not None else "—")
+                change_col.metric("Change since first", f"{improvement:+.1f}" if improvement is not None else "—")
+            if latest:
+                st.caption(f"Last analyzed {_format_timestamp(latest.get('timestamp'))}")
+                concerns = latest.get("concerns") or []
+                if concerns:
+                    st.write("**Visible concerns**")
+                    st.write(", ".join(concerns))
+                st.write(latest.get("skin_condition_description") or "No summary available.")
+                with st.expander("Additional measures"):
+                    st.write(f"**Cleanliness score** {latest.get('skin_cleanliness_score', '—')}/10")
+                    st.write(f"**Estimated age** {latest.get('age_estimate', '—')}")
+            else:
+                st.caption("Complete your first skin analysis to see your assessment here.")
+
+    with st.expander("Manage profile"):
+        if st.button("Switch profile"):
             _clear_active_profile()
             st.rerun()
-
-    total = len(analyses)
-    latest_score = latest.get("skin_quality_score") if latest else None
-    improvement = None
-    if len(analyses) >= 2:
-        improvement = latest_score - analyses[0].get("skin_quality_score", 0)
-
-    col1, col2, col3 = st.columns(3)
-    col1.metric("Total analyses", total)
-    col2.metric("Latest quality score", f"{latest_score}/10" if latest_score is not None else "N/A")
-    col3.metric(
-        "Change since first analysis",
-        f"{improvement:+.1f}" if improvement is not None else "N/A",
-    )
-
-    st.divider()
-    goals_col, assessment_col = st.columns([1, 2])
-
-    with goals_col:
-        st.markdown("### 🎯 Skincare goals")
-        if st.session_state.get("editing_profile"):
-            _render_goal_editor(user)
-        else:
-            for goal in user.get("skincare_goals", []):
-                st.markdown(f"- {goal}")
-            if st.button("Edit goals", use_container_width=True):
-                st.session_state.editing_profile = True
-                st.rerun()
-        st.caption("Used to personalize chatbot answers and recommendations.")
-
-    with assessment_col:
-        st.markdown("### 🔬 Latest AI assessment")
-        if latest:
-            timestamp = _format_timestamp(latest.get("timestamp"))
-            st.caption(f"Last analyzed: {timestamp}")
-            score1, score2, score3 = st.columns(3)
-            score1.metric("Skin quality", f"{latest.get('skin_quality_score', 'N/A')}/10")
-            score2.metric("Cleanliness", f"{latest.get('skin_cleanliness_score', 'N/A')}/10")
-            score3.metric("Estimated age", latest.get("age_estimate", "N/A"))
-
-            concerns = latest.get("concerns", [])
-            st.markdown("**Visible concerns**")
-            st.write(", ".join(concerns) if concerns else "No visible concerns reported.")
-            st.markdown("**AI summary**")
-            st.write(latest.get("skin_condition_description", "No summary available."))
-            st.caption("AI-estimated from the latest photo; this is not a medical diagnosis.")
-        else:
-            st.info(
-                "No skin analysis yet. Open Skin Analysis from the sidebar to complete your first assessment."
-            )
-
-    st.divider()
-    st.markdown("### Quick actions")
-    action1, action2, action3 = st.columns(3)
-    action1.button(
-        "🔬 New skin analysis",
-        type="primary",
-        use_container_width=True,
-        on_click=_navigate_to,
-        args=("🏠 Skin Analysis",),
-    )
-    action2.button(
-        "📊 View history",
-        use_container_width=True,
-        on_click=_navigate_to,
-        args=("📊 History",),
-    )
-    action3.button(
-        "💄 Get recommendations",
-        use_container_width=True,
-        on_click=_navigate_to,
-        args=("💄 Recommendations",),
-    )
-
-    with st.expander("Local profile management"):
         st.caption(
             f"Created {_format_timestamp(user.get('created_at'))}. Profile data is stored locally as JSON."
         )
@@ -316,11 +318,6 @@ def _clear_active_profile():
     st.session_state.chat_history = []
     st.session_state.recommendations = None
     st.session_state.editing_profile = False
-
-
-def _navigate_to(page):
-    """Update the sidebar navigation from a profile quick action."""
-    st.session_state.navigation_page = page
 
 
 def _validate_new_profile(username, goals):

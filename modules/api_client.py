@@ -215,3 +215,10 @@ class LLMClient:
 
 # Create global client instance
 llm_client = LLMClient()
+
+
+def client_for_session() -> LLMClient:
+    """Use the current session's key or the configured server default."""
+    import streamlit as st
+
+    return LLMClient(api_key=st.session_state.get("api_key"))

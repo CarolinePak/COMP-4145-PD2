@@ -1,32 +1,37 @@
 # config/config.py
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
 load_dotenv()
 
-# Try to load from Streamlit secrets first (for cloud deployment)
-try:
-    import streamlit as st
-    if hasattr(st, 'secrets'):
-        API_KEY = st.secrets.get("API_KEY", os.getenv("API_KEY", ""))
-        API_ENDPOINT = st.secrets.get("API_ENDPOINT", os.getenv("API_ENDPOINT", "https://genai.hkbu.edu.hk/api/v1/chat/completions"))
-        MODEL_NAME = st.secrets.get("MODEL_NAME", os.getenv("MODEL_NAME", "gpt-6-luna"))
-    else:
-        # Fall back to environment variables
-        API_KEY = os.getenv("API_KEY", "")
-        API_ENDPOINT = os.getenv("API_ENDPOINT", "https://genai.hkbu.edu.hk/api/v1/chat/completions")
-        MODEL_NAME = os.getenv("MODEL_NAME", "gpt-6-luna")
-except:
-    # Fall back to environment variables
-    API_KEY = os.getenv("API_KEY", "")
-    API_ENDPOINT = os.getenv("API_ENDPOINT", "https://genai.hkbu.edu.hk/api/v1/chat/completions")
-    MODEL_NAME = os.getenv("MODEL_NAME", "gpt-6-luna")
+API_KEY = os.getenv("API_KEY", "")
+API_ENDPOINT = os.getenv(
+    "API_ENDPOINT", "https://genai.hkbu.edu.hk/api/v1/chat/completions"
+)
+MODEL_NAME = os.getenv("MODEL_NAME", "gpt-6-luna")
+
+# Only query Streamlit secrets when a secrets file exists. This keeps local
+# previews quiet while retaining support for local and hosted secrets files.
+secrets_files = [
+    Path(__file__).resolve().parents[1] / ".streamlit" / "secrets.toml",
+    Path.home() / ".streamlit" / "secrets.toml",
+]
+if any(path.is_file() for path in secrets_files):
+    try:
+        import streamlit as st
+
+        API_KEY = st.secrets.get("API_KEY", API_KEY)
+        API_ENDPOINT = st.secrets.get("API_ENDPOINT", API_ENDPOINT)
+        MODEL_NAME = st.secrets.get("MODEL_NAME", MODEL_NAME)
+    except Exception:
+        pass
 
 # Application Configuration
 APP_TITLE = "SkinInsight"
-APP_ICON = "🔬"
+APP_ICON = ":material/flare:"
 
 # File Paths
 DATA_DIR = "data"

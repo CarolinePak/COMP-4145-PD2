@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+MAX_RECOMMENDED_PRODUCTS = 4
 
 def load_catalogue():
     data = json.loads((ROOT / 'data/products.json').read_text(encoding='utf-8'))
@@ -19,7 +20,8 @@ def analysis_context(analysis):
             for k in ('concerns', 'skin_condition_description')}
 
 def request_signature(analysis, catalogue):
-    return hashlib.sha256(json.dumps([analysis_context(analysis), catalogue], sort_keys=True).encode()).hexdigest()
+    request_data = [analysis_context(analysis), catalogue, MAX_RECOMMENDED_PRODUCTS]
+    return hashlib.sha256(json.dumps(request_data, sort_keys=True).encode()).hexdigest()
 
 def build_messages(analysis, catalogue):
     return [
@@ -45,8 +47,8 @@ def validate_response(raw, catalogue):
     for key in ('analysis_summary', 'limitations'):
         data[key] = text(data.get(key), key)
     products = data.get('products')
-    if not isinstance(products, list) or len(products) > 3:
-        raise ValueError('Expected up to three products.')
+    if not isinstance(products, list) or len(products) > MAX_RECOMMENDED_PRODUCTS:
+        raise ValueError(f'Expected up to {MAX_RECOMMENDED_PRODUCTS} products.')
     known = {p['product_id'] for p in catalogue}
     selected = set()
     for p in products:
