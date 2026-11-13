@@ -92,10 +92,9 @@ def _render_week(grouped):
 
     st.header(f"{monday:%d %b} – {days[-1]:%d %b %Y}")
     with ui.panel("week-controls"):
-        previous, current, following = st.columns(3, gap="small")
+        previous, current = st.columns(2, gap="small")
         previous.button("Previous", help="Show the previous week", on_click=_change_week, args=(offset - 1,), use_container_width=True)
         current.button("This week", on_click=_change_week, args=(0,), disabled=offset == 0, use_container_width=True)
-        following.button("Next", help="Show the next week", on_click=_change_week, args=(offset + 1,), disabled=offset == 0, use_container_width=True)
 
     tiles = []
     for day, score in scores.items():
