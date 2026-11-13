@@ -1,93 +1,75 @@
 # modules/chatbot.py
 
 import streamlit as st
-from modules.api_client import llm_client
+from modules import ui
+from modules.api_client import client_for_session
 from prompts.prompt_utils import load_prompt
 from datetime import datetime
 
 
 SUGGESTED_QUESTIONS = [
     "Explain my latest analysis results",
-    "How can I improve my skin quality score?",
     "What skincare routine suits my concerns?",
-    "What ingredients should I look for?",
-    "How often should I repeat a skin analysis?",
 ]
 
 def render():
-    """
-    Render the Chatbot page.
-    Provides conversational interface for skincare questions.
-    """
-
-    st.title("💬 SkinCare AI Assistant")
-    st.markdown("Ask me anything about skincare, your analysis results, or get personalized advice!")
-
-    # Initialize chat history in session state if not exists
-    if 'chat_history' not in st.session_state:
+    ui.heading("Skincare Chatbot", "Ask about your results, skincare ingredients, or your daily routine.", "chat")
+    if "chat_history" not in st.session_state:
         st.session_state.chat_history = []
 
-    # Display chat history
-    chat_container = st.container()
+    with ui.panel("chat-layout"):
+        with ui.panel("card conversation"):
+            title_col, action_col = st.columns([5, 1])
+            with title_col:
+                st.header("Conversation")
+            with action_col:
+                if st.session_state.chat_history:
+                    st.button(
+                        "Clear",
+                        key="clear_chat",
+                        use_container_width=True,
+                        on_click=_clear_conversation,
+                    )
 
-    with chat_container:
-        # Show welcome message if no history
-        if not st.session_state.chat_history:
-            with st.chat_message("assistant"):
-                st.markdown("👋 Hello! I'm your AI skincare assistant. How can I help you today?")
+            transcript = st.container(height=300, border=False)
+            empty_message = None
+            with transcript:
+                if not st.session_state.chat_history:
+                    empty_message = st.empty()
+                    empty_message.caption("Ask a question below to start the conversation.")
 
-                # Show analysis summary if available
-                if st.session_state.current_analysis:
-                    analysis = st.session_state.current_analysis
-                    st.info(f"I see you recently completed a skin analysis:\n\n"
-                           f"- **Quality Score:** {analysis['skin_quality_score']}/10\n"
-                           f"- **Cleanliness Score:** {analysis['skin_cleanliness_score']}/10\n"
-                           f"- **Age Estimate:** {analysis['age_estimate']} years\n\n"
-                           f"Feel free to ask me about your results!")
+                for message in st.session_state.chat_history:
+                    with st.chat_message(message["role"]):
+                        st.markdown(message["content"])
+                        if message.get("timestamp"):
+                            st.caption(message["timestamp"])
 
-        # Display message history
-        for message in st.session_state.chat_history:
-            with st.chat_message(message["role"]):
-                st.markdown(message["content"])
-                if "timestamp" in message:
-                    st.caption(message["timestamp"])
+            suggestions = st.empty()
+            if not st.session_state.chat_history:
+                with suggestions.container(), ui.panel("chat-suggestions"):
+                    st.caption("Try asking one of these questions:")
+                    suggestion_columns = st.columns(2)
+                    for index, question in enumerate(SUGGESTED_QUESTIONS):
+                        suggestion_columns[index % 2].button(
+                            question,
+                            key=f"suggested_question_{index}",
+                            use_container_width=True,
+                            on_click=_queue_suggested_question,
+                            args=(question,),
+                        )
 
-    # Suggested prompts close to the input, like conversation starters.
-    st.caption("Not sure what to ask? Try one of these:")
-    suggestion_columns = st.columns(2)
-    for index, question in enumerate(SUGGESTED_QUESTIONS):
-        suggestion_columns[index % 2].button(
-            question,
-            key=f"suggested_question_{index}",
-            use_container_width=True,
-            on_click=_queue_suggested_question,
-            args=(question,),
-        )
+            user_input = st.chat_input("Ask a skincare question")
+            question = st.session_state.pop("suggested_question", None) or user_input
+            if question:
+                suggestions.empty()
+                if empty_message is not None:
+                    empty_message.empty()
+                handle_user_message(question, transcript)
+                st.rerun()
 
-    suggested_input = st.session_state.pop("suggested_question", None)
-    if suggested_input:
-        handle_user_message(suggested_input)
-        st.rerun()
 
-    # Chat input at bottom
-    user_input = st.chat_input("Type your question here...")
-
-    if user_input:
-        handle_user_message(user_input)
-
-    # Sidebar quick actions
-    with st.sidebar:
-        st.markdown("### 💬 Chat Options")
-
-        # Clear history button
-        if st.button("🗑️ Clear Chat History", use_container_width=True):
-            st.session_state.chat_history = []
-            st.rerun()
-
-        # Message count
-        msg_count = len(st.session_state.chat_history)
-        st.caption(f"Messages in history: {msg_count}")
-
+def _clear_conversation():
+    st.session_state.chat_history = []
 
 
 def _queue_suggested_question(question: str):
@@ -95,12 +77,13 @@ def _queue_suggested_question(question: str):
     st.session_state.suggested_question = question
 
 
-def handle_user_message(user_input: str):
+def handle_user_message(user_input: str, transcript):
     """
     Handle user's chat message.
 
     Args:
         user_input: User's message text
+        transcript: Fixed-height Streamlit container used for chat messages
     """
 
     # Add user message to history
@@ -111,25 +94,22 @@ def handle_user_message(user_input: str):
     }
     st.session_state.chat_history.append(user_message)
 
-    # Display user message
-    with st.chat_message("user"):
-        st.markdown(user_input)
-        st.caption(user_message["timestamp"])
+    # Render the submitted question immediately inside the transcript. The
+    # thinking indicator stays directly below it while the API call is running.
+    with transcript:
+        with st.chat_message("user"):
+            st.markdown(user_input)
+            st.caption(user_message["timestamp"])
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                bot_response = get_chatbot_response(user_input)
 
-    # Get bot response
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            bot_response = get_chatbot_response(user_input)
-            st.markdown(bot_response)
-
-            # Add bot message to history
-            bot_message = {
-                "role": "assistant",
-                "content": bot_response,
-                "timestamp": datetime.now().strftime("%H:%M:%S")
-            }
-            st.session_state.chat_history.append(bot_message)
-            st.caption(bot_message["timestamp"])
+    bot_message = {
+        "role": "assistant",
+        "content": bot_response,
+        "timestamp": datetime.now().strftime("%H:%M:%S")
+    }
+    st.session_state.chat_history.append(bot_message)
 
 
 def get_chatbot_response(user_input: str) -> str:
@@ -143,11 +123,9 @@ def get_chatbot_response(user_input: str) -> str:
         Bot's response text
     """
 
-    from config import config
-
-    # Check API key
-    if not config.API_KEY:
-        return "❌ API key not configured. Please add your API key in the sidebar settings."
+    client = client_for_session()
+    if not client.api_key:
+        return "API key not configured. Add your API key in Settings to continue."
 
     # Build context
     context = build_conversation_context()
@@ -156,7 +134,7 @@ def get_chatbot_response(user_input: str) -> str:
     try:
         system_prompt = load_prompt("chatbot_system")
     except FileNotFoundError:
-        return "❌ Chatbot system prompt not found. Please ensure all prompt files are present."
+        return "The chatbot prompt could not be found. Please check that the prompt files are present."
 
     # Add context to system prompt
     if context:
@@ -174,14 +152,8 @@ def get_chatbot_response(user_input: str) -> str:
             "content": msg["content"]
         })
 
-    # Add current user input
-    messages.append({
-        "role": "user",
-        "content": user_input
-    })
-
     # Call LLM
-    result = llm_client.call_llm(
+    result = client.call_llm(
         messages=messages,
         temperature=0.7,  # More creative for conversation
         max_tokens=800
@@ -190,7 +162,7 @@ def get_chatbot_response(user_input: str) -> str:
     if result["success"]:
         return result["response"]
     else:
-        return f"❌ Sorry, I encountered an error: {result['error']}\n\nPlease try again or check your API settings."
+        return f"I couldn't complete that response: {result['error']}\n\nPlease try again or check your API settings."
 
 
 def build_conversation_context() -> str:

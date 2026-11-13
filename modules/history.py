@@ -4,6 +4,8 @@ from zoneinfo import ZoneInfo
 
 import streamlit as st
 
+from modules import ui
+
 
 TIMEZONE = ZoneInfo("Asia/Hong_Kong")
 GOOD_SCORE = 7
@@ -57,156 +59,89 @@ def average_score(records):
 
 
 def render():
-    st.title("📊 Analysis History")
+    ui.heading("Skin History", "Revisit your saved assessments and follow changes over time.", "history")
+    grouped = get_daily_records(st.session_state.get("analyses", []))
+    week_view, all_records = st.tabs(["Weekly view", "All records"])
 
-    records = st.session_state.get("analyses", [])
-    grouped = get_daily_records(records)
+    with week_view, ui.panel("card"):
+        _render_week(grouped)
+    with all_records, ui.panel("card"):
+        if grouped:
+            selected = st.selectbox(
+                "Filter by date",
+                [None, *sorted(grouped, reverse=True)],
+                format_func=lambda day: day.strftime("%d %b %Y") if day else "All dates",
+            )
+            days = [selected] if selected else sorted(grouped, reverse=True)
+            _render_records(days, grouped)
+        else:
+            _empty_history("Saved assessments will appear here after your first skin analysis.")
 
-    this_week, all_records = st.tabs(["This Week", "All Records"])
 
-    with this_week:
-        today = datetime.now(TIMEZONE).date()
-        monday = today - timedelta(days=today.weekday())
-        days = [monday + timedelta(days=i) for i in range(7)]
+def _change_week(offset):
+    st.session_state.history_week_offset = offset
 
-        daily_scores = {
-            day: average_score(grouped.get(day, []))
-            for day in days
-        }
 
-        valid_scores = [
-            score for score in daily_scores.values()
-            if score is not None
-        ]
-        highest = max(valid_scores) if valid_scores else None
+def _render_week(grouped):
+    today = datetime.now(TIMEZONE).date()
+    offset = st.session_state.get("history_week_offset", 0)
+    monday = today - timedelta(days=today.weekday()) + timedelta(weeks=offset)
+    days = [monday + timedelta(days=i) for i in range(7)]
+    scores = {day: average_score(grouped.get(day, [])) for day in days}
+    highest = max((score for score in scores.values() if score is not None), default=None)
 
-        st.caption(f"{monday:%d %b} – {days[-1]:%d %b %Y}")
+    st.header(f"{monday:%d %b} – {days[-1]:%d %b %Y}")
+    with ui.panel("week-controls"):
+        previous, current = st.columns(2, gap="small")
+        previous.button("Previous", help="Show the previous week", on_click=_change_week, args=(offset - 1,), use_container_width=True)
+        current.button("This week", on_click=_change_week, args=(0,), disabled=offset == 0, use_container_width=True)
 
-        # Static styles; no user text is inserted into HTML.
-        st.markdown(
-            """
-            <style>
-            .week-card {
-                text-align: center;
-                border-radius: 12px;
-                padding: 14px 2px;
-                border: 1px solid #d1d5db;
-                min-height: 145px;
-                box-sizing: border-box;
-            }
-            .week-card .weekday {
-                font-size: 14px;
-                font-weight: 600;
-            }
-            .week-card .month {
-                margin-top: 12px;
-                font-size: 12px;
-            }
-            .week-card .day {
-                font-size: 28px;
-                font-weight: 700;
-            }
-            .week-card .status {
-                margin-top: 8px;
-                font-size: 11px;
-            }
-            .week-empty {
-                background: #e5e7eb;
-                color: #6b7280;
-            }
-            .week-recorded {
-                background: #ffffff;
-                color: #1f2937;
-                box-shadow: 0 3px 10px #00000012;
-            }
-            .week-best {
-                background: #dcfce7;
-                color: #166534;
-                border-color: #22c55e;
-            }
-            .week-low {
-                background: #fee2e2;
-                color: #991b1b;
-                border-color: #ef4444;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True,
+    tiles = []
+    for day, score in scores.items():
+        tone, status = _day_status(grouped.get(day, []), score, highest)
+        current = ' aria-current="date"' if day == today else ""
+        tone += " today" if day == today else ""
+        tiles.append(
+            f'<div class="calendar-day {tone}"{current}><span>{day:%a}</span>'
+            f'<strong>{day.day}</strong><span>{status}</span></div>'
         )
+    ui.html(f'<div class="calendar-grid">{"".join(tiles)}</div>')
+    st.caption("Daily scores average the AI cleanliness and quality estimates across valid assessments.")
 
-        weekdays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-        columns = st.columns(7)
+    st.subheader("Assessments this week")
+    if any(day in grouped for day in days):
+        _render_records(reversed(days), grouped)
+    else:
+        ui.empty_state("No assessments this week", "Check another week or open All records.", "history")
 
-        for index, day in enumerate(days):
-            day_records = grouped.get(day, [])
-            score = daily_scores[day]
 
-            if not day_records:
-                style = "week-empty"
-                status = "No record"
-            elif score is None:
-                style = "week-recorded"
-                status = "Score unavailable"
-            elif score < GOOD_SCORE:
-                style = "week-low"
-                status = f"{score:.1f}/10 · Low"
-            elif highest is not None and math.isclose(score, highest):
-                style = "week-best"
-                status = f"{score:.1f}/10 · Best"
-            else:
-                style = "week-recorded"
-                status = f"{score:.1f}/10"
+def _day_status(records, score, highest):
+    if not records:
+        return "", "No record"
+    if score is None:
+        return "recorded", "Score unavailable"
+    if score < GOOD_SCORE:
+        return "low", f"{score:.1f}/10 · Low"
+    if highest is not None and math.isclose(score, highest):
+        return "best", f"{score:.1f}/10 · Best"
+    return "recorded", f"{score:.1f}/10"
 
-            with columns[index]:
-                st.markdown(
-                    f"""
-                    <div class="week-card {style}">
-                        <div class="weekday">{weekdays[index]}</div>
-                        <div class="month">{day:%b}</div>
-                        <div class="day">{day.day}</div>
-                        <div class="status">{status}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
 
-        st.caption(
-            "Gray: no record · White: recorded · "
-            "Green: weekly best at 7+ · Red: below 7"
-        )
-        st.caption(
-            "Daily scores average the AI cleanliness and quality scores "
-            "across valid records. These are not medical measurements."
-        )
+def _empty_history(description):
+    ui.empty_state("No assessments yet", description, "history")
 
-        st.divider()
-        st.subheader("This Week's Records")
 
-        week_records = [
-            record
-            for day in reversed(days)
-            for record in grouped.get(day, [])
-        ]
-
-        if not week_records:
-            st.info("No records this week. Complete a skin analysis first.")
-
-        for index, record in enumerate(week_records):
-            with st.expander(
-                f"{record.get('timestamp', '')} · Record {index + 1}"
-            ):
-                col1, col2 = st.columns(2)
-                col1.metric(
-                    "Cleanliness",
-                    f"{record.get('skin_cleanliness_score', 'N/A')}/10",
-                )
-                col2.metric(
-                    "Skin Quality",
-                    f"{record.get('skin_quality_score', 'N/A')}/10",
-                )
+def _render_records(days, grouped):
+    for day in days:
+        for index, record in enumerate(reversed(grouped.get(day, [])), 1):
+            timestamp = datetime.fromisoformat(record["timestamp"])
+            if timestamp.tzinfo is None:
+                timestamp = timestamp.replace(tzinfo=TIMEZONE)
+            time = timestamp.astimezone(TIMEZONE).strftime("%H:%M")
+            with st.expander(f"{day:%d %b %Y} · {time} · Record {index}"):
+                with ui.panel("metrics"):
+                    cleanliness, quality = st.columns(2)
+                    cleanliness.metric("Cleanliness", f"{record.get('skin_cleanliness_score', '—')}/10")
+                    quality.metric("Skin quality", f"{record.get('skin_quality_score', '—')}/10")
                 st.write(record.get("skin_condition_description", ""))
                 st.write("Notes:", record.get("user_note") or "No notes.")
-
-    with all_records:
-        st.date_input("Select a date")
-        st.info("Date filtering will be added in the next step.")

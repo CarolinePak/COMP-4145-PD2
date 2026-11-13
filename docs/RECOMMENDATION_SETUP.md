@@ -5,10 +5,10 @@
 - `modules/recommendation_logic.py`: reads the catalogue, minimizes analysis context and validates AI output.
 - `modules/recommendations.py`: English product cards, morning/evening routine, tips, catalogue browser and error states.
 - Updated recommendation prompt and app routing.
-- Uses the existing API Settings and API client configuration. No changes to API client, skin analysis or chatbot are included.
+- Uses the shared API configuration. A key entered in Settings applies to the current browser session.
 
 ## How it works
-Complete Skin Analysis, open Recommendations, save your API key in the sidebar and click Generate Recommendations. The configured API receives only concerns, skin description and catalogue data. No additional image, age or score is sent for recommendations. AI chooses 0–3 IDs without category quotas and generates reasons and routines. The app rejects unknown/duplicate IDs and routine references to unselected products. Names, benefits, ingredients and links displayed on product cards come directly from the catalogue.
+Complete Skin Analysis, open Recommendations, save your API key in Settings, and click Generate Recommendations. The API receives concerns, the skin description, and catalogue data. The prompt asks for four suitable catalogue options and allows fewer when the analysis supports fewer matches. Product options open first in a two-column card grid on desktop, followed by the Daily routine and Tips & cautions tabs. Validation rejects unknown or duplicate product IDs and routine references to unselected products. Names, benefits, ingredients, and product links come directly from the catalogue.
 
 Generic routine steps (including sunscreen) may appear without a catalogue product. Similar options are alternatives. Prompt constraints reduce unsupported claims but do not guarantee all generated prose is factually grounded; inspect results during live testing.
 

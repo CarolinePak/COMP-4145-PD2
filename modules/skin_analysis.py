@@ -3,7 +3,8 @@
 import streamlit as st
 import json
 from datetime import datetime
-from modules.api_client import llm_client
+from modules import ui
+from modules.api_client import client_for_session
 from prompts.prompt_utils import load_prompt
 import uuid
 import os
@@ -15,106 +16,61 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 MAX_IMAGE_PIXELS = 25_000_000
 
 def render():
-    """
-    Render the Skin Analysis page.
-    Main interface for uploading and analyzing skin images.
-    """
+    ui.heading("Skin Analysis", "Review visible skin patterns from a clear, well-lit photo.", "scan")
 
-    st.title("🔬 AI-Powered Skin Analysis")
-    st.markdown("Upload a clear face photo for comprehensive skin quality assessment.")
-
-    # Create two columns: left for upload, right for results
-    col1, col2 = st.columns([1, 1])
-
-    with col1:
-        st.subheader("📸 Upload Image")
-
-        image_source = st.radio(
-            "Image source",
-            ["Upload Image", "Take a Photo"],
-            horizontal=True,
-            help="Choose an existing photo or use your device camera.",
-        )
-
-        if image_source == "Upload Image":
-            uploaded_file = st.file_uploader(
-                "Choose a face image",
-                type=["jpg", "jpeg", "png"],
-                help="Upload a clear, well-lit photo of your face",
-                label_visibility="collapsed"
-            )
-        else:
-            # Mirror the live camera and captured preview like a front-facing camera.
-            st.markdown(
-                """
-                <style>
-                div[data-testid="stCameraInput"] video,
-                div[data-testid="stCameraInput"] img {
-                    transform: scaleX(-1);
-                }
-                </style>
-                """,
-                unsafe_allow_html=True,
-            )
-            uploaded_file = st.camera_input(
-                "Take a face photo",
-                help="Your browser may ask for camera permission.",
-            )
-
-        st.caption(
-            "Privacy: the selected photo is sent to the configured AI service "
-            "for analysis. This application does not save the original photo locally."
-        )
-
-        if uploaded_file is not None:
-            # Validate image
-            is_valid, error_msg = validate_image(uploaded_file)
-
-            if not is_valid:
-                st.error(f"❌ {error_msg}")
+    with ui.panel("analysis"):
+        photo_col, results_col = st.columns([1, 1.2])
+        with photo_col, ui.panel("card"):
+            st.header("Your photo")
+            _render_photo_controls()
+        with results_col, ui.panel("card"):
+            st.header("Your results")
+            if st.session_state.current_analysis:
+                display_results(st.session_state.current_analysis)
             else:
-                # Display image
-                preview_bytes = prepare_image_bytes(
-                    uploaded_file,
-                    mirror_horizontal=image_source == "Take a Photo",
+                ui.empty_state(
+                    "Ready for your first analysis",
+                    "Your scores, visible concerns, and skincare suggestions will appear here.",
+                    "scan",
                 )
-                st.image(preview_bytes, caption="Selected Image", width="stretch")
 
-                # Show file info
-                st.caption(f"📄 {uploaded_file.name} ({uploaded_file.size / 1024:.1f} KB)")
 
-                # Analyze button
-                if st.button("🔍 Analyze Skin", type="primary", use_container_width=True):
-                    analyze_skin(
-                        uploaded_file,
-                        mirror_horizontal=image_source == "Take a Photo",
-                    )
-        else:
-            # Show placeholder
-            if image_source == "Upload Image":
-                st.info("👆 Please upload an image to begin analysis")
-            else:
-                st.info("📷 Allow camera access and take a photo to begin analysis")
+def _render_photo_controls():
+    image_source = st.radio("Photo source", ["Upload image", "Take a photo"], horizontal=True)
+    using_camera = image_source == "Take a photo"
+    if using_camera:
+        ui.html(
+            '<style>[data-testid="stCameraInput"] video, [data-testid="stCameraInput"] img '
+            '{transform: scaleX(-1);}</style>'
+        )
+        uploaded_file = st.camera_input("Take a face photo")
+    else:
+        uploaded_file = st.file_uploader(
+            "Choose a face image", type=["jpg", "jpeg", "png"], label_visibility="collapsed"
+        )
 
-            # Sample instructions
-            with st.expander("📋 Photo Guidelines"):
-                st.markdown("""
-                For best results, ensure your photo:
-                - Shows your full face clearly
-                - Is well-lit (natural lighting preferred)
-                - Is front-facing (not angled)
-                - Has a clean face (no makeup for accurate analysis)
-                - Is in focus (not blurry)
-                """)
+    with st.expander("Tips for a clear photo"):
+        st.markdown(
+            "- Face the camera directly and keep your entire face in frame.\n"
+            "- Use even, natural light and avoid strong shadows.\n"
+            "- Use a sharp image without filters or makeup."
+        )
+    st.caption(
+        "When you start an analysis, your photo is sent to the configured AI service. "
+        "The original photo is not saved locally."
+    )
+    if uploaded_file is None:
+        return
 
-    with col2:
-        st.subheader("📊 Analysis Results")
+    valid, error = validate_image(uploaded_file)
+    if not valid:
+        st.error(error)
+        return
 
-        # Display results if available
-        if st.session_state.current_analysis:
-            display_results(st.session_state.current_analysis)
-        else:
-            st.info("Results will appear here after analysis")
+    preview = prepare_image_bytes(uploaded_file, mirror_horizontal=using_camera)
+    st.image(preview, caption="Selected photo", use_column_width=True)
+    if st.button("Analyze photo", type="primary", use_container_width=True):
+        analyze_skin(uploaded_file, mirror_horizontal=using_camera)
 
 
 def validate_image(uploaded_file) -> tuple:
@@ -183,13 +139,13 @@ def analyze_skin(uploaded_file, mirror_horizontal: bool = False):
     """
 
     # Check API key
-    from config import config
-    if not config.API_KEY:
-        st.error("❌ API key not configured. Please add your API key in the sidebar settings.")
+    client = client_for_session()
+    if not client.api_key:
+        st.error("API key not configured. Add it in Settings to continue.")
         return
 
     # Show loading state
-    with st.spinner("🔬 Analyzing your skin... This may take 10-20 seconds."):
+    with st.spinner("Reviewing your photo. This may take 10–20 seconds."):
 
         # Normalize uploads and camera captures to JPEG for the vision API.
         try:
@@ -198,7 +154,7 @@ def analyze_skin(uploaded_file, mirror_horizontal: bool = False):
                 mirror_horizontal=mirror_horizontal,
             )
         except (OSError, UnidentifiedImageError):
-            st.error("❌ The selected image could not be processed. Please choose another photo.")
+            st.error("The selected image could not be processed. Please choose another photo.")
             return
 
         # Load prompts
@@ -206,11 +162,11 @@ def analyze_skin(uploaded_file, mirror_horizontal: bool = False):
             system_prompt = load_prompt("skin_analysis_system")
             user_prompt = load_prompt("skin_analysis_user")
         except FileNotFoundError as e:
-            st.error(f"❌ Prompt template error: {e}")
+            st.error(f"Prompt template error: {e}")
             return
 
         # Call LLM API
-        result = llm_client.call_with_image(
+        result = client.call_with_image(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             image_bytes=image_bytes,
@@ -235,18 +191,18 @@ def analyze_skin(uploaded_file, mirror_horizontal: bool = False):
                 # Save to file
                 save_analysis(analysis_data)
 
-                st.success("✅ Analysis complete!")
+                st.success("Analysis complete.")
                 st.rerun()
 
             except Exception as e:
-                st.error(f"❌ Failed to parse analysis results: {str(e)}")
+                st.error(f"Unable to read the analysis results: {str(e)}")
 
                 # Show raw response for debugging
-                with st.expander("🐛 Debug Info - Raw Response"):
+                with st.expander("Technical details"):
                     st.code(result["response"])
 
         else:
-            st.error(f"❌ Analysis failed: {result['error']}")
+            st.error(f"Analysis failed: {result['error']}")
 
 
 def parse_analysis_response(response_text: str) -> dict:
@@ -317,104 +273,37 @@ def parse_analysis_response(response_text: str) -> dict:
 
 
 def display_results(analysis: dict):
-    """
-    Display analysis results in structured UI.
+    """Display the latest assessment and next steps."""
+    with ui.panel("metrics"):
+        for column, label, value in zip(
+            st.columns(3),
+            ("Cleanliness", "Skin quality", "Estimated age"),
+            (
+                f"{analysis['skin_cleanliness_score']}/10",
+                f"{analysis['skin_quality_score']}/10",
+                f"{analysis['age_estimate']} years",
+            ),
+        ):
+            column.metric(label, value)
 
-    Args:
-        analysis: Parsed analysis dict
-    """
+    st.subheader("Skin condition")
+    st.write(analysis["skin_condition_description"])
+    for key, title in (("concerns", "Visible concerns"), ("recommendations", "Suggestions")):
+        if analysis.get(key):
+            st.subheader(title)
+            for entry in analysis[key]:
+                st.markdown(f"- {entry}")
 
-    # KPI Cards
-    st.markdown("### 📈 Key Metrics")
-
-    metric_col1, metric_col2, metric_col3 = st.columns(3)
-
-    with metric_col1:
-        score = analysis['skin_cleanliness_score']
-        st.metric(
-            label="Skin Cleanliness",
-            value=f"{score}/10",
-            help="Overall cleanliness and clarity of skin"
-        )
-        # Color-coded emoji
-        if score >= 8:
-            st.success("Excellent! ✨")
-        elif score >= 6:
-            st.info("Good! 👍")
-        else:
-            st.warning("Needs improvement 💪")
-
-    with metric_col2:
-        score = analysis['skin_quality_score']
-        st.metric(
-            label="Skin Quality",
-            value=f"{score}/10",
-            help="Overall health and condition of skin"
-        )
-        if score >= 8:
-            st.success("Excellent! ✨")
-        elif score >= 6:
-            st.info("Good! 👍")
-        else:
-            st.warning("Needs improvement 💪")
-
-    with metric_col3:
-        st.metric(
-            label="Estimated Age",
-            value=f"{analysis['age_estimate']} years",
-            help="AI-estimated age based on skin condition"
-        )
-
-    # Progress bars
-    st.markdown("---")
-
-    col_a, col_b = st.columns(2)
-
-    with col_a:
-        st.markdown("**Cleanliness Score**")
-        st.progress(analysis['skin_cleanliness_score'] / 10)
-
-    with col_b:
-        st.markdown("**Quality Score**")
-        st.progress(analysis['skin_quality_score'] / 10)
-
-    # Detailed Description
-    st.markdown("---")
-    st.markdown("### 📝 Skin Condition Analysis")
-    st.write(analysis['skin_condition_description'])
-
-    # Concerns (if any)
-    if analysis.get('concerns'):
-        st.markdown("---")
-        st.markdown("### ⚠️ Identified Concerns")
-        for concern in analysis['concerns']:
-            st.markdown(f"- {concern}")
-
-    # Quick Recommendations (if any)
-    if analysis.get('recommendations'):
-        st.markdown("---")
-        st.markdown("### 💡 Quick Recommendations")
-        for rec in analysis['recommendations']:
-            st.markdown(f"- {rec}")
-
-    # Action Buttons
-    st.markdown("---")
-    st.markdown("### 🎯 Next Steps")
-
-    btn_col1, btn_col2 = st.columns(2)
-
-    with btn_col1:
-        if st.button("💬 Discuss with AI Assistant", use_container_width=True):
-            st.info("Switch to 'Chatbot' page in the sidebar to discuss your results!")
-
-    with btn_col2:
-        if st.button("💄 Get Product Recommendations", use_container_width=True):
-            st.info("Switch to 'Recommendations' page in the sidebar!")
-
-    # Analysis metadata
-    st.markdown("---")
-    st.caption(f"Analysis ID: {analysis['analysis_id']}")
-    st.caption(f"Performed: {datetime.fromisoformat(analysis['timestamp']).strftime('%B %d, %Y at %H:%M:%S')}")
+    st.caption("These AI estimates are for information and do not provide a diagnosis.")
+    with st.expander("Assessment details"):
+        st.caption(f"Analysis ID: {analysis.get('analysis_id', '—')}")
+        st.caption(f"Recorded: {analysis.get('timestamp', '—')}")
+    with ui.panel("result-actions"):
+        chat_col, routine_col = st.columns(2)
+        with chat_col:
+            ui.page_button("Discuss results", "Chatbot", key="scan_chat", full=True)
+        with routine_col:
+            ui.page_button("Explore recommendations", "Recommendations", key="scan_routine", full=True)
 
 
 def save_analysis(analysis: dict):
@@ -443,5 +332,5 @@ def save_analysis(analysis: dict):
 
     except Exception as e:
         # Just log the error, don't stop the analysis from displaying
-        st.warning(f"⚠️ Could not save analysis to file: {e}")
+        st.warning(f"Could not save analysis to file: {e}")
         # Analysis still works, just not saved to disk
