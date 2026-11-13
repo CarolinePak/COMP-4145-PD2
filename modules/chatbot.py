@@ -9,10 +9,7 @@ from datetime import datetime
 
 SUGGESTED_QUESTIONS = [
     "Explain my latest analysis results",
-    "How can I improve my skin quality score?",
     "What skincare routine suits my concerns?",
-    "What ingredients should I look for?",
-    "How often should I repeat a skin analysis?",
 ]
 
 def render():
@@ -34,9 +31,12 @@ def render():
                         on_click=_clear_conversation,
                     )
 
-            with st.container(height=430, border=False):
+            transcript = st.container(height=300, border=False)
+            empty_message = None
+            with transcript:
                 if not st.session_state.chat_history:
-                    st.caption("Ask a question below to start the conversation.")
+                    empty_message = st.empty()
+                    empty_message.caption("Ask a question below to start the conversation.")
 
                 for message in st.session_state.chat_history:
                     with st.chat_message(message["role"]):
@@ -44,8 +44,9 @@ def render():
                         if message.get("timestamp"):
                             st.caption(message["timestamp"])
 
+            suggestions = st.empty()
             if not st.session_state.chat_history:
-                with ui.panel("chat-suggestions"):
+                with suggestions.container(), ui.panel("chat-suggestions"):
                     st.caption("Try asking one of these questions:")
                     suggestion_columns = st.columns(2)
                     for index, question in enumerate(SUGGESTED_QUESTIONS):
@@ -60,7 +61,10 @@ def render():
             user_input = st.chat_input("Ask a skincare question")
             question = st.session_state.pop("suggested_question", None) or user_input
             if question:
-                handle_user_message(question)
+                suggestions.empty()
+                if empty_message is not None:
+                    empty_message.empty()
+                handle_user_message(question, transcript)
                 st.rerun()
 
 
@@ -73,12 +77,13 @@ def _queue_suggested_question(question: str):
     st.session_state.suggested_question = question
 
 
-def handle_user_message(user_input: str):
+def handle_user_message(user_input: str, transcript):
     """
     Handle user's chat message.
 
     Args:
         user_input: User's message text
+        transcript: Fixed-height Streamlit container used for chat messages
     """
 
     # Add user message to history
@@ -89,10 +94,15 @@ def handle_user_message(user_input: str):
     }
     st.session_state.chat_history.append(user_message)
 
-    # Get the response, then let the next rerun render both messages inside the
-    # fixed-height transcript rather than extending the page.
-    with st.spinner("Thinking..."):
-        bot_response = get_chatbot_response(user_input)
+    # Render the submitted question immediately inside the transcript. The
+    # thinking indicator stays directly below it while the API call is running.
+    with transcript:
+        with st.chat_message("user"):
+            st.markdown(user_input)
+            st.caption(user_message["timestamp"])
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                bot_response = get_chatbot_response(user_input)
 
     bot_message = {
         "role": "assistant",
