@@ -391,13 +391,28 @@
   max-width: 100%;
 }
 [data-testid="stChatInput"] textarea { background: var(--paper); color: var(--ink); }
-[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .starter-card) [data-testid="stButton"] > button {
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .ui-card.conversation) {
+  padding: .8rem 1rem;
+}
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .ui-card.conversation) [data-testid="stChatMessage"] {
+  padding: .68rem .8rem;
+}
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .ui-card.conversation) [data-testid="stChatInput"] {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--paper);
+  padding-top: .35rem;
+}
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .ui-chat-suggestions) [data-testid="stButton"] > button {
   justify-content: flex-start;
   text-align: left;
   background: #f1e9db;
   border-color: transparent;
+  min-height: 2.5rem;
+  padding: .5rem .65rem;
 }
-[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .starter-card) [data-testid="stButton"] > button:hover {
+[data-testid="stVerticalBlock"]:has(> :is(.element-container, [data-testid="stElementContainer"]) .ui-chat-suggestions) [data-testid="stButton"] > button:hover {
   background: var(--sage);
   border-color: #a9b9aa;
 }

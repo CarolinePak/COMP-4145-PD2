@@ -21,38 +21,47 @@ def render():
         st.session_state.chat_history = []
 
     with ui.panel("chat-layout"):
-        conversation, prompts = st.columns([1.65, 1])
-        with conversation, ui.panel("card conversation"):
-            st.header("Conversation")
+        with ui.panel("card conversation"):
+            title_col, action_col = st.columns([5, 1])
+            with title_col:
+                st.header("Conversation")
+            with action_col:
+                if st.session_state.chat_history:
+                    st.button(
+                        "Clear",
+                        key="clear_chat",
+                        use_container_width=True,
+                        on_click=_clear_conversation,
+                    )
+
+            with st.container(height=430, border=False):
+                if not st.session_state.chat_history:
+                    st.caption("Ask a question below to start the conversation.")
+
+                for message in st.session_state.chat_history:
+                    with st.chat_message(message["role"]):
+                        st.markdown(message["content"])
+                        if message.get("timestamp"):
+                            st.caption(message["timestamp"])
+
             if not st.session_state.chat_history:
-                ui.empty_state(
-                    "What’s on your mind?",
-                    "Write a question below or choose a conversation starter.",
-                    "chat",
-                )
-            for message in st.session_state.chat_history:
-                with st.chat_message(message["role"]):
-                    st.markdown(message["content"])
-                    if message.get("timestamp"):
-                        st.caption(message["timestamp"])
+                with ui.panel("chat-suggestions"):
+                    st.caption("Try asking one of these questions:")
+                    suggestion_columns = st.columns(2)
+                    for index, question in enumerate(SUGGESTED_QUESTIONS):
+                        suggestion_columns[index % 2].button(
+                            question,
+                            key=f"suggested_question_{index}",
+                            use_container_width=True,
+                            on_click=_queue_suggested_question,
+                            args=(question,),
+                        )
 
             user_input = st.chat_input("Ask a skincare question")
             question = st.session_state.pop("suggested_question", None) or user_input
             if question:
                 handle_user_message(question)
                 st.rerun()
-
-        with prompts, ui.panel("card starter-card"):
-            st.header("Conversation starters")
-            if st.session_state.current_analysis:
-                st.caption("Your latest skin analysis is available as context.")
-            for index, question in enumerate(SUGGESTED_QUESTIONS):
-                st.button(
-                    question, key=f"suggested_question_{index}", use_container_width=True,
-                    on_click=_queue_suggested_question, args=(question,),
-                )
-            if st.session_state.chat_history:
-                st.button("Clear conversation", on_click=_clear_conversation)
 
 
 def _clear_conversation():
@@ -80,25 +89,17 @@ def handle_user_message(user_input: str):
     }
     st.session_state.chat_history.append(user_message)
 
-    # Display user message
-    with st.chat_message("user"):
-        st.markdown(user_input)
-        st.caption(user_message["timestamp"])
+    # Get the response, then let the next rerun render both messages inside the
+    # fixed-height transcript rather than extending the page.
+    with st.spinner("Thinking..."):
+        bot_response = get_chatbot_response(user_input)
 
-    # Get bot response
-    with st.chat_message("assistant"):
-        with st.spinner("Thinking..."):
-            bot_response = get_chatbot_response(user_input)
-            st.markdown(bot_response)
-
-            # Add bot message to history
-            bot_message = {
-                "role": "assistant",
-                "content": bot_response,
-                "timestamp": datetime.now().strftime("%H:%M:%S")
-            }
-            st.session_state.chat_history.append(bot_message)
-            st.caption(bot_message["timestamp"])
+    bot_message = {
+        "role": "assistant",
+        "content": bot_response,
+        "timestamp": datetime.now().strftime("%H:%M:%S")
+    }
+    st.session_state.chat_history.append(bot_message)
 
 
 def get_chatbot_response(user_input: str) -> str:
@@ -140,12 +141,6 @@ def get_chatbot_response(user_input: str) -> str:
             "role": msg["role"],
             "content": msg["content"]
         })
-
-    # Add current user input
-    messages.append({
-        "role": "user",
-        "content": user_input
-    })
 
     # Call LLM
     result = client.call_llm(
